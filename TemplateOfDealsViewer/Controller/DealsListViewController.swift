@@ -25,18 +25,20 @@ class DealsListViewController: UIViewController {
     @IBOutlet private var tableView: UITableView!
     @IBOutlet private var criteriaPicker: CriteriaPicker!
     
-    //MARK: DetailsViewController Lifecycle
+    //MARK: -  DetailsViewController Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupTableView()
         setupCriteriaPicker()
         guard let criteria = criteriaPicker.selectedCriteria else { return }
+        
         getData(sortedBy: criteria)
-        updateBarButton()
+        updateSortDirectionButton()
     }
     
     //MARK: - Objective-C
-    @objc private func criteriaPicked() {
+    @objc private func sortByCriteria() {
         DispatchQueue.main.async {
             self.criteriaPicker.sortByChosenCriteria(deals: &self.allDeals, isSortedUp: self.isSortedUp)
             self.tableView.reloadData()
@@ -44,8 +46,8 @@ class DealsListViewController: UIViewController {
     }
 
     @objc func changeSortingDirection() {
-       isSortedUp = !isSortedUp
-       updateBarButton()
+        isSortedUp = !isSortedUp
+        updateSortDirectionButton()
         DispatchQueue.main.async {
             self.criteriaPicker.sortByChosenCriteria(deals: &self.allDeals, isSortedUp: self.isSortedUp)
             self.tableView.reloadData()
@@ -64,13 +66,14 @@ class DealsListViewController: UIViewController {
     }
     
     private func setupCriteriaPicker() {
-        criteriaPicker.addTarget(self, action: #selector(criteriaPicked), for: .valueChanged)
+        criteriaPicker.addTarget(self, action: #selector(sortByCriteria), for: .valueChanged)
         criteriaPicker.selectedCriteria = .date
     }
     
     private func getData(sortedBy: Criteria) {
         server.subscribeToDeals { [weak self] deals in
-            guard let self = self else { return }
+            guard let self else { return }
+            
             var sortedDeals = [Deal]()
             DispatchQueue.main.async {
                 sortedDeals.append(contentsOf: deals)
@@ -80,7 +83,7 @@ class DealsListViewController: UIViewController {
         }
     }
         
-    private func updateBarButton() {
+    private func updateSortDirectionButton() {
         let downButton =
         UIBarButtonItem(image: UIImage(systemName: "chevron.down"), style: .plain, target: self, action: #selector(changeSortingDirection))
         downButton.tintColor = .systemIndigo
@@ -95,7 +98,7 @@ class DealsListViewController: UIViewController {
     }
 }
 
-//MARK: UITableViewDataSource, UITableViewDelegate
+//MARK: - UITableViewDataSource, UITableViewDelegate
 extension DealsListViewController: UITableViewDataSource, UITableViewDelegate {
  
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -103,14 +106,24 @@ extension DealsListViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: DealCell.reuseIidentifier, for: indexPath) as! DealCell
+        guard
+            let cell = tableView.dequeueReusableCell(withIdentifier: DealCell.reuseIidentifier, for: indexPath) as? DealCell
+        else {
+            return UITableViewCell()
+        }
+        
         let deal = allDeals[indexPath.row]
         cell.setDeal(deal: deal)
         return cell
     }
   
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let cell = tableView.dequeueReusableHeaderFooterView(withIdentifier: HeaderCell.reuseIidentifier) as! HeaderCell
+        guard
+            let cell = tableView.dequeueReusableHeaderFooterView(withIdentifier: HeaderCell.reuseIidentifier) as? HeaderCell
+        else {
+            return UITableViewCell()
+        }
+        
         return cell
     }
     

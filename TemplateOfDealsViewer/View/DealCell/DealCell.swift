@@ -2,7 +2,7 @@ import UIKit
 
 class DealCell: UITableViewCell {
     
-    static let reuseIidentifier = "DealCell"
+    static let reuseIidentifier = String(describing: DealCell.self)
   
     @IBOutlet private var dateLabel: UILabel!
     @IBOutlet private var instrumentNameLabel: UILabel!

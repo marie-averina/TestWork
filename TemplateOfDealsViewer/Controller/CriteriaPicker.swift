@@ -40,24 +40,29 @@ final class CriteriaPicker: UIControl {
     //MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         self.setupView()
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
+        
         self.setupView()
     }
     
     //MARK: - Layout
     override func layoutSubviews() {
         super.layoutSubviews()
+        
         stackView.frame = bounds
     }
     
     //MARK: - Objective-C
     @objc func selectedCriteria(_ sender: UIButton) {
-        guard let index = self.buttons.firstIndex(of: sender) else { return }
-        guard let criteria = Criteria(rawValue: index) else { return }
+        guard let index = self.buttons.firstIndex(of: sender),
+              let criteria = Criteria(rawValue: index)
+        else { return }
+        
         self.selectedCriteria = criteria
     }
     
@@ -80,13 +85,14 @@ final class CriteriaPicker: UIControl {
     
     private func updateSelectedCriteria() {
         for (index, button) in self.buttons.enumerated() {
-            guard let criteria = Criteria(rawValue: index) else { continue}
+            guard let criteria = Criteria(rawValue: index) else { continue }
+            
             button.isSelected = criteria == self.selectedCriteria
         }
     }
     
     //MARK: - Public methods
-     func sortByChosenCriteria( deals: inout [Deal], isSortedUp: Bool) {
+    func sortByChosenCriteria( deals: inout [Deal], isSortedUp: Bool) {
         if isSortedUp {
             switch self.selectedCriteria {
             case .date:
